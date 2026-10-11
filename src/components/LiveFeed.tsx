@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import type { PodInfo } from '../api/types'
 import { useNow, useOperator } from '../api/useOperator'
 import { Operator } from './Operator'
@@ -55,10 +54,10 @@ function Pods({ pods, connected }: { pods: PodInfo[] | undefined; connected: boo
   )
 }
 
-// Live view of the cluster: the pods as kubectl lists them, and the operator's own log lines.
+// Live view of the cluster: the pods as kubectl lists them, with the operator's own log lines under them, so a
+// pod disappearing and the line that explains it are on screen together.
 export function LiveFeed() {
   const { snapshot, events, connected } = useOperator()
-  const [tab, setTab] = useState<'pods' | 'events'>('pods')
   const s = snapshot?.status
 
   const title = s ? `${s.namespace}/${s.name} is ${s.phase}` : connected ? 'Connecting to the operator' : 'Cannot reach the operator API'
@@ -70,26 +69,16 @@ export function LiveFeed() {
         <p className="feed__title">{title}</p>
         {snapshot && <span className="feed__mode">{snapshot.simulated ? 'simulated' : 'live'}</span>}
       </div>
-      <div className="feed__tabs" role="tablist">
-        <button role="tab" aria-selected={tab === 'pods'} onClick={() => setTab('pods')}>
-          Pods
-        </button>
-        <button role="tab" aria-selected={tab === 'events'} onClick={() => setTab('events')}>
-          Operator log
-        </button>
-      </div>
-      {tab === 'pods' ? (
-        <Pods pods={snapshot?.pods} connected={connected} />
-      ) : (
-        <ul className="feed__lines" role="log" aria-live="polite" aria-label="Operator log">
-          {events.length === 0 && <li className="feed__line">{connected ? 'waiting for the first reconcile...' : 'no connection'}</li>}
-          {events.map((e) => (
-            <li key={e.id} className={`feed__line feed__line--${e.level}`}>
-              <time>{time(e.ts)}</time> {e.text}
-            </li>
-          ))}
-        </ul>
-      )}
+      <Pods pods={snapshot?.pods} connected={connected} />
+      <p className="feed__label">operator log</p>
+      <ul className="feed__lines" role="log" aria-live="polite" aria-label="Operator log">
+        {events.length === 0 && <li className="feed__line">{connected ? 'waiting for the first reconcile...' : 'no connection'}</li>}
+        {events.map((e) => (
+          <li key={e.id} className={`feed__line feed__line--${e.level}`}>
+            <time>{time(e.ts)}</time> {e.text}
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

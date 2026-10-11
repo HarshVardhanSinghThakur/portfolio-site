@@ -4,6 +4,9 @@ let state: OperatorState = { connected: false, snapshot: null, events: [], lostV
 let lastCount: number | null = null // last visit total seen while the database was up
 let wasDown = false
 let source: EventSource | null = null
+// server clock minus this browser's clock. Ages ("pod is 4s old", "backup 2 min ago") compare server timestamps,
+// so they must be measured on the server's clock: a visitor's laptop (or the VM) can be minutes off.
+let clockOffset = 0
 const listeners = new Set<() => void>()
 
 const set = (patch: Partial<OperatorState>) => {
@@ -31,6 +34,9 @@ function connect() {
     const ev = JSON.parse((e as MessageEvent).data) as OperatorEvent
     const events = [...state.events.filter((x) => x.id !== ev.id), ev].sort((a, b) => a.id - b.id).slice(-4)
     set({ events })
+  })
+  es.addEventListener('ping', (e) => {
+    clockOffset = (JSON.parse((e as MessageEvent).data) as { now: number }).now - Date.now()
   })
   es.onopen = () => set({ connected: true })
   es.onerror = () => set({ connected: false })
@@ -70,6 +76,9 @@ export const operator = {
   },
 
   getState: () => state,
+
+  // the current time on the server's clock
+  now: () => Date.now() + clockOffset,
 
   // One anonymous row per browser session: a random id kept on this device, never an IP address.
   recordVisit() {

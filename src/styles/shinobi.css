@@ -488,35 +488,21 @@
   color: var(--ember);
   font-size: 0.68rem;
 }
-.feed__tabs {
-  display: flex;
-  gap: 1.1rem;
-  margin-bottom: 0.7rem;
-  border-bottom: 1px solid var(--line);
-}
-.feed__tabs button {
-  padding: 0.25rem 0;
-  margin-bottom: -1px;
-  background: none;
-  border: 0;
-  border-bottom: 1px solid transparent;
+.feed__label {
+  margin: 0.8rem 0 0.25rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--line);
   color: var(--muted);
-  font: 500 0.72rem var(--f-mono);
-  cursor: pointer;
-}
-.feed__tabs button[aria-selected='true'] {
-  color: var(--bone);
-  border-bottom-color: var(--vermilion);
 }
 .feed__lines {
   list-style: none;
   padding: 0;
-  min-height: 9.5em;
+  min-height: 6.2em;
 }
 
 /* `kubectl get pods`: fixed columns so the table never jumps, long names are cut with an ellipsis */
 .pods {
-  min-height: 9.5em;
+  min-height: 8em;
 }
 .pods__cmd {
   margin-bottom: 0.35rem;
