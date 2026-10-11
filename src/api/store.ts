@@ -41,13 +41,19 @@ function visitorId() {
   try {
     let id = localStorage.getItem('visitor')
     if (!id) {
-      id = crypto.randomUUID()
+      id = randomId()
       localStorage.setItem('visitor', id)
     }
     return id
   } catch {
-    return crypto.randomUUID()
+    return randomId()
   }
+}
+
+// crypto.randomUUID() only exists on secure origins (https or localhost); on plain http it is undefined and
+// calling it crashed the whole page. getRandomValues works everywhere. 32 hex chars, no personal data.
+function randomId() {
+  return Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('')
 }
 
 export const operator = {

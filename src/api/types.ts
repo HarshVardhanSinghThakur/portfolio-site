@@ -33,10 +33,18 @@ export interface DestroyGuard {
   cooldownSec?: number
 }
 
+export interface PodInfo {
+  name: string
+  ready: string
+  status: string
+  createdAt: number
+}
+
 export interface Snapshot {
   simulated: boolean
   status: DbStatus
   metrics: Metrics
+  pods: PodInfo[]
   visits: VisitStats
   viewers: number
   destroy: DestroyGuard

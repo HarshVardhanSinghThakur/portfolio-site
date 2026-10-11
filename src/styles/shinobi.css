@@ -488,10 +488,102 @@
   color: var(--ember);
   font-size: 0.68rem;
 }
+.feed__tabs {
+  display: flex;
+  gap: 1.1rem;
+  margin-bottom: 0.7rem;
+  border-bottom: 1px solid var(--line);
+}
+.feed__tabs button {
+  padding: 0.25rem 0;
+  margin-bottom: -1px;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  color: var(--muted);
+  font: 500 0.72rem var(--f-mono);
+  cursor: pointer;
+}
+.feed__tabs button[aria-selected='true'] {
+  color: var(--bone);
+  border-bottom-color: var(--vermilion);
+}
 .feed__lines {
   list-style: none;
   padding: 0;
-  min-height: 7.5em;
+  min-height: 9.5em;
+}
+
+/* `kubectl get pods`: fixed columns so the table never jumps, long names are cut with an ellipsis */
+.pods {
+  min-height: 9.5em;
+}
+.pods__cmd {
+  margin-bottom: 0.35rem;
+  color: var(--muted);
+}
+.pods__empty {
+  opacity: 0.6;
+}
+.pods__table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 0.7rem;
+}
+.pods__table th:nth-child(2),
+.pods__table td:nth-child(2) {
+  width: 3.6em;
+}
+.pods__table th:nth-child(3),
+.pods__table td:nth-child(3) {
+  width: 10.5em;
+}
+.pods__table th:nth-child(4),
+.pods__table td:nth-child(4) {
+  width: 3.6em;
+}
+.pods__table th {
+  font-weight: 500;
+  text-align: left;
+  opacity: 0.5;
+}
+.pods__table td,
+.pods__table th {
+  padding: 0.05rem 0.4rem 0.05rem 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pods__row--ok td:nth-child(3) {
+  color: #7fd6a4;
+}
+.pods__row--warn {
+  color: #ffb06a;
+}
+.pods__row--error {
+  color: #ff5a48;
+  font-weight: 600;
+}
+.pods__row--done {
+  opacity: 0.45;
+}
+/* a pod that has just appeared flashes once, so a restored database pod is easy to spot */
+.pods__row--new {
+  animation: pod-new 2.4s ease-out;
+}
+@keyframes pod-new {
+  from {
+    background: rgb(229 56 42 / 0.28);
+  }
+  to {
+    background: transparent;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pods__row--new {
+    animation: none;
+  }
 }
 .feed__line time {
   opacity: 0.5;
