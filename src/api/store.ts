@@ -1,0 +1,89 @@
+import type { OperatorEvent, OperatorState, Snapshot } from './types'
+
+let state: OperatorState = { connected: false, snapshot: null, events: [], lostVisits: 0 }
+let lastCount: number | null = null // last visit total seen while the database was up
+let wasDown = false
+let source: EventSource | null = null
+const listeners = new Set<() => void>()
+
+const set = (patch: Partial<OperatorState>) => {
+  state = { ...state, ...patch }
+  listeners.forEach((l) => l())
+}
+
+function onSnapshot(s: Snapshot) {
+  let lost = state.lostVisits
+  if (s.visits.ok) {
+    if (wasDown && lastCount !== null) lost = Math.max(0, lastCount - s.visits.total)
+    lastCount = s.visits.total
+    wasDown = false
+  } else if (!wasDown) {
+    wasDown = true
+    lost = 0
+  }
+  set({ connected: true, snapshot: s, lostVisits: lost })
+}
+
+function connect() {
+  const es = new EventSource('/api/stream')
+  es.addEventListener('snapshot', (e) => onSnapshot(JSON.parse((e as MessageEvent).data)))
+  es.addEventListener('log', (e) => {
+    const ev = JSON.parse((e as MessageEvent).data) as OperatorEvent
+    const events = [...state.events.filter((x) => x.id !== ev.id), ev].sort((a, b) => a.id - b.id).slice(-4)
+    set({ events })
+  })
+  es.onopen = () => set({ connected: true })
+  es.onerror = () => set({ connected: false })
+  source = es
+}
+
+function visitorId() {
+  try {
+    let id = localStorage.getItem('visitor')
+    if (!id) {
+      id = crypto.randomUUID()
+      localStorage.setItem('visitor', id)
+    }
+    return id
+  } catch {
+    return crypto.randomUUID()
+  }
+}
+
+export const operator = {
+  subscribe(fn: () => void) {
+    listeners.add(fn)
+    if (!source) connect()
+    return () => {
+      listeners.delete(fn)
+      if (listeners.size === 0) {
+        source?.close()
+        source = null
+      }
+    }
+  },
+
+  getState: () => state,
+
+  // One anonymous row per browser session: a random id kept on this device, never an IP address.
+  recordVisit() {
+    try {
+      if (sessionStorage.getItem('visited')) return
+      sessionStorage.setItem('visited', '1')
+    } catch {
+      /* private mode: record once per page load */
+    }
+    fetch('/api/visit', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ visitor: visitorId() }) }).catch(() => {})
+  },
+
+  async destroy(): Promise<{ ok: true } | { ok: false; error: string }> {
+    try {
+      const res = await fetch('/api/destroy', { method: 'POST' })
+      if (res.ok) return { ok: true }
+      const body = (await res.json().catch(() => ({}))) as { reason?: string; error?: string }
+      return { ok: false, error: body.reason ?? body.error ?? `The server answered ${res.status}.` }
+    } catch {
+      return { ok: false, error: 'Could not reach the server.' }
+    }
+  },
+}

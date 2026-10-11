@@ -1,0 +1,20 @@
+:root {
+  --night: #07080d;
+  --ink: #020204;
+  --bone: #ebe4d2;
+  --parchment: #f0e6d0;
+  --parchment-dark: #e0d4bc;
+  --muted: rgb(235 228 210 / 0.62);
+  --line: rgb(235 228 210 / 0.16);
+  --vermilion: #e5382a;
+  --ember: #ff7b3a;
+  --gold: #c9a84c;
+  --steel: #3a4a63;
+
+  --f-display: 'Instrument Serif', Georgia, serif;
+  --f-body: 'Geist Variable', system-ui, sans-serif;
+  --f-mono: 'JetBrains Mono Variable', ui-monospace, 'Cascadia Code', Consolas, monospace;
+
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+  --gutter-right: clamp(1.25rem, 7vw, 6rem);
+}

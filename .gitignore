@@ -1,0 +1,25 @@
+# dependencies and build output (rebuilt by `npm ci` and `npm run build`)
+node_modules/
+dist/
+*.tsbuildinfo
+
+# secrets and local config
+.env
+.env.*
+!.env.example
+
+# logs, caches, archives
+*.log
+.vite/
+coverage/
+*.tgz
+
+# editors and OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# tool output that can contain a work email or usage data: never commit
+.codemie/
+docs/codemie/

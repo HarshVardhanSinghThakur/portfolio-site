@@ -1,0 +1,60 @@
+# Static site plus the single Ingress for the whole domain (k3s ships Traefik as the default ingress).
+# No host is set on purpose: http://<vm-ip>/ keeps working when the VM's IP changes.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portfolio-site
+  namespace: portfolio
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: portfolio-site }
+  template:
+    metadata:
+      labels: { app: portfolio-site }
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: nginx
+          image: portfolio-site:dev1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet: { path: /, port: 8080 }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: ["ALL"] }
+          resources:
+            requests: { cpu: 10m, memory: 16Mi }
+            limits: { cpu: 200m, memory: 64Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: portfolio-site
+  namespace: portfolio
+spec:
+  selector: { app: portfolio-site }
+  ports:
+    - port: 80
+      targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: portfolio
+  namespace: portfolio
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service: { name: portfolio-api, port: { number: 80 } }
+          - path: /
+            pathType: Prefix
+            backend:
+              service: { name: portfolio-site, port: { number: 80 } }
