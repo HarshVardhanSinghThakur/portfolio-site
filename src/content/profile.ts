@@ -3,7 +3,7 @@ export const profile = {
   surname: 'Singh',
   role: 'Machine learning, backend and cloud engineer',
   tagline: 'I build software from the model down to the machine it runs on.',
-  about: 'CS graduate, AI specialization. Previously at EPAM Systems, Red Panda Games and Zebpay.',
+  about: 'CS graduate, AI specialization. Currently at EPAM Systems, Previously at Red Panda Games and Zebpay.',
   email: 'harshthakur9415@gmail.com',
   github: 'https://github.com/HarshVardhanSinghThakur',
   linkedin: 'https://www.linkedin.com/in/harsh-vardhan-singh',

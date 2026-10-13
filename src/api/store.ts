@@ -1,5 +1,9 @@
 import type { OperatorEvent, OperatorState, Snapshot } from './types'
 
+// Empty = same origin (dev server proxy, or nginx in the cluster). For a site hosted elsewhere, e.g. GitHub Pages,
+// set VITE_API_BASE at build time to the API's address, like https://api.harsh.me
+const API = ((import.meta.env.VITE_API_BASE as string | undefined) ?? '').replace(/\/$/, '')
+
 let state: OperatorState = { connected: false, snapshot: null, events: [], lostVisits: 0 }
 let lastCount: number | null = null // last visit total seen while the database was up
 let wasDown = false
@@ -28,7 +32,7 @@ function onSnapshot(s: Snapshot) {
 }
 
 function connect() {
-  const es = new EventSource('/api/stream')
+  const es = new EventSource(`${API}/api/stream`)
   es.addEventListener('snapshot', (e) => onSnapshot(JSON.parse((e as MessageEvent).data)))
   es.addEventListener('log', (e) => {
     const ev = JSON.parse((e as MessageEvent).data) as OperatorEvent
@@ -88,12 +92,12 @@ export const operator = {
     } catch {
       /* private mode: record once per page load */
     }
-    fetch('/api/visit', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ visitor: visitorId() }) }).catch(() => {})
+    fetch(`${API}/api/visit`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ visitor: visitorId() }) }).catch(() => {})
   },
 
   async destroy(): Promise<{ ok: true } | { ok: false; error: string }> {
     try {
-      const res = await fetch('/api/destroy', { method: 'POST' })
+      const res = await fetch(`${API}/api/destroy`, { method: 'POST' })
       if (res.ok) return { ok: true }
       const body = (await res.json().catch(() => ({}))) as { reason?: string; error?: string }
       return { ok: false, error: body.reason ?? body.error ?? `The server answered ${res.status}.` }
